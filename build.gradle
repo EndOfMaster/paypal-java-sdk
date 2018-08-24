@@ -1,0 +1,60 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
+group 'com.endofmaster'
+version '1.0.0'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+
+repositories {
+    mavenLocal()
+    jcenter()
+    maven { url 'http://maven.aliyun.com/nexus/content/groups/public' }
+    maven { url "https://dl.bintray.com/endofmaster/maven" }
+}
+
+dependencies {
+    compile 'org.apache.httpcomponents:httpclient:4.5.3'
+    compile 'com.endofmaster:commons-utils:1.0.2'
+    compile 'com.endofmaster:commons-id:1.0.0'
+
+    compile 'log4j:log4j:1.2.17'
+
+    testRuntime 'org.slf4j:slf4j-simple:1.7.22'
+    testCompile 'junit:junit:4.12'
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : '<bintrayUser>'
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : '<bintrayApiKey>'
+    configurations = ['archives']
+
+    dryRun = false //[Default: false] Whether to run this as dry-run, without deploying
+    publish = true //[Default: false] Whether version should be auto published after an upload
+    override = false //[Default: false] Whether to override version artifacts already published
+    pkg {
+        repo = 'maven'
+        name = project.name
+        userOrg = 'endofmaster'
+        licenses = ['Apache-2.0']
+        vcsUrl = "https://gitlab.com/EndOfMaster/${project.name}/"
+        version {
+            name = project.version
+        }
+    }
+}
+
+// 代码文件以UTF-8编码，注意：不加该设置可能报“错误: 编码GBK的不可映射字符”
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
