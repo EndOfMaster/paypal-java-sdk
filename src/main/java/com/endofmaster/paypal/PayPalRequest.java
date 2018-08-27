@@ -25,10 +25,6 @@ public abstract class PayPalRequest<T extends PayPalResponse> {
 
     public abstract Class<T> responseClass();
 
-    protected String pathParam() {
-        return "";
-    }
-
     protected String method() {
         return "POST";
     }

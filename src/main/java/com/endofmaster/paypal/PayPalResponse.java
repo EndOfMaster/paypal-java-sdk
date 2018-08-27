@@ -8,18 +8,28 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class PayPalResponse {
 
-    @JsonProperty("message")
-    private String error;
+    @JsonProperty("debug_id")
+    private String debugId;
 
     @JsonProperty("error_description")
+    private String errorDescription;
+
     private String message;
 
     public boolean success() {
-        return StringUtils.isBlank(error) && StringUtils.isBlank(message);
+        return StringUtils.isBlank(debugId);
     }
 
-    public String getError() {
-        return error;
+    public String getErrorMsg() {
+        return errorDescription + "==" + message;
+    }
+
+    public String getDebugId() {
+        return debugId;
+    }
+
+    public String getErrorDescription() {
+        return errorDescription;
     }
 
     public String getMessage() {

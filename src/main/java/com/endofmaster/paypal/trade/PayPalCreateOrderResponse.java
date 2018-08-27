@@ -12,9 +12,9 @@ import java.util.List;
 public class PayPalCreateOrderResponse extends PayPalResponse {
 
     private String id;
-    private PayPalOrderState status;
-    @JsonProperty("purchase_units")
-    private List<PayPalPurchaseUnit> purchaseUnits;
+    private PayPalOrderState state;
+    @JsonProperty("transactions")
+    private List<PayPalTransaction> payPalTransactions;
     private List<Link> links;
 
     public String getPayUrl() {
@@ -43,12 +43,16 @@ public class PayPalCreateOrderResponse extends PayPalResponse {
         return id;
     }
 
-    public PayPalOrderState getStatus() {
-        return status;
+    public PayPalOrderState getState() {
+        return state;
     }
 
-    public List<PayPalPurchaseUnit> getPurchaseUnits() {
-        return purchaseUnits;
+    public long getAmount() {
+        return payPalTransactions.get(0).getMoney();
+    }
+
+    public List<PayPalTransaction> getPayPalTransactions() {
+        return payPalTransactions;
     }
 
     public List<Link> getLinks() {

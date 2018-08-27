@@ -5,5 +5,5 @@ package com.endofmaster.paypal;
  */
 public enum  PayPalOrderState {
 
-    CREATED,
+    created,
 }

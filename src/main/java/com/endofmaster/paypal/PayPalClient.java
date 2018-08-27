@@ -92,8 +92,8 @@ public class PayPalClient {
                     entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
                     requestBuilder.setEntity(entity);
                 } else {
-                    requestBuilder = RequestBuilder.get(BASE_URL + request.getPath() + request.pathParam());
-                    logger.debug("请求PayPal发送参数：" + request.pathParam());
+                    requestBuilder = RequestBuilder.get(BASE_URL + request.getPath());
+                    logger.debug("请求PayPal发送参数：" + request.getPath());
                 }
             }
             for (Map.Entry<String, String> entry : headers.entrySet()) {

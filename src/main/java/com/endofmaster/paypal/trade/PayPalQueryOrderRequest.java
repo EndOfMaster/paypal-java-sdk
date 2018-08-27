@@ -32,18 +32,13 @@ public class PayPalQueryOrderRequest extends PayPalRequest<PayPalCreateOrderResp
     }
 
     @Override
-    protected String pathParam() {
-        return id;
-    }
-
-    @Override
     protected String method() {
         return "GET";
     }
 
     @Override
     protected String getPath() {
-        return "/v1/checkout/orders/";
+        return "/v1/payments/payment/" + id;
     }
 
     @Override

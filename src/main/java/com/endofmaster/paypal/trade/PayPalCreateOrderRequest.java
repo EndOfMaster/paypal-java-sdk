@@ -28,8 +28,10 @@ public class PayPalCreateOrderRequest extends PayPalRequest<PayPalCreateOrderRes
     @Override
     protected Map<String, Object> buildParams() {
         Map<String, Object> params = super.buildParams();
-        PayPalPurchaseUnit palPurchaseUnit = new PayPalPurchaseUnit(description, amount);
-        params.put("purchase_units", Collections.singleton(palPurchaseUnit));
+        params.put("intent", "sale");
+        params.put("payer", Collections.singletonMap("payment_method", "paypal"));
+        PayPalTransaction transactions = new PayPalTransaction(description, amount);
+        params.put("transactions", Collections.singleton(transactions));
         Map<String, String> urls = new HashMap<>(2);
         urls.put("return_url", returnUrl);
         urls.put("cancel_url", cancelUrl);
@@ -38,15 +40,8 @@ public class PayPalCreateOrderRequest extends PayPalRequest<PayPalCreateOrderRes
     }
 
     @Override
-    protected Map<String, String> buildHeader() {
-        Map<String, String> headers = super.buildHeader();
-        headers.put("PayPal-Partner-Attribution-Id", "EXAMPLE_MP");
-        return headers;
-    }
-
-    @Override
     protected String getPath() {
-        return "/v1/checkout/orders";
+        return "/v1/payments/payment";
     }
 
     @Override

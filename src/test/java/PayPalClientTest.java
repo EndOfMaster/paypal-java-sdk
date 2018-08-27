@@ -39,19 +39,20 @@ public class PayPalClientTest {
         if (response.success()) {
             System.err.println(response.getPayUrl());
         } else {
-            System.err.println(response.getMessage());
+            System.err.println(response.getErrorMsg());
         }
     }
 
     @Test
     public void queryOrder() throws InterruptedException {
-        PayPalQueryOrderRequest request = new PayPalQueryOrderRequest("4C199276N3192112D");
+        PayPalQueryOrderRequest request = new PayPalQueryOrderRequest("PAY-3KD33335LA815932VLOB4LQY");
         Thread.sleep(2000);
         PayPalCreateOrderResponse response = client.execute(request);
         if (response.success()) {
-            System.err.println(response.getStatus());
+            System.err.println(response.getState());
+            System.err.println(response.getAmount());
         } else {
-            System.err.println(response.getMessage());
+            System.err.println(response.getErrorMsg());
         }
     }
 
