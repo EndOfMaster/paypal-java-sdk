@@ -8,13 +8,14 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class PayPalResponse {
 
-    protected String error;
+    @JsonProperty("message")
+    private String error;
 
     @JsonProperty("error_description")
-    protected String message;
+    private String message;
 
     public boolean success() {
-        return StringUtils.isBlank(error);
+        return StringUtils.isBlank(error) && StringUtils.isBlank(message);
     }
 
     public String getError() {

@@ -74,23 +74,30 @@ public class PayPalClient {
             } else {
                 headers.put("Authorization", "Bearer " + ACCESS_TOKEN);
             }
-            RequestBuilder requestBuilder = RequestBuilder.post(BASE_URL + request.getPath());
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                requestBuilder.addHeader(entry.getKey(), entry.getValue());
-            }
+            RequestBuilder requestBuilder = RequestBuilder.post();
             Map<String, Object> params = request.buildParams();
             if (request.getDataType() == REQ_DATA_TYPE_FORM) {
+                requestBuilder.setUri(BASE_URL + request.getPath());
                 logger.debug("请求PayPal发送参数：" + params);
                 List<NameValuePair> formParams = params.keySet().stream().map(mapKey -> new BasicNameValuePair(mapKey, params.get(mapKey).toString())).collect(Collectors.toList());
                 UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formParams, CHARSET);
                 requestBuilder.setEntity(entity);
             }
             if (request.getDataType() == REQ_DATA_TYPE_JSON) {
-                String reqJson = MAPPER.writeValueAsString(params);
-                logger.debug("请求PayPal发送参数：" + reqJson);
-                StringEntity entity = new StringEntity(reqJson, CHARSET);
-                entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-                requestBuilder.setEntity(entity);
+                if ("POST".equalsIgnoreCase(request.method())) {
+                    requestBuilder.setUri(BASE_URL + request.getPath());
+                    String reqJson = MAPPER.writeValueAsString(params);
+                    logger.debug("请求PayPal发送参数：" + reqJson);
+                    StringEntity entity = new StringEntity(reqJson, CHARSET);
+                    entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+                    requestBuilder.setEntity(entity);
+                } else {
+                    requestBuilder = RequestBuilder.get(BASE_URL + request.getPath() + request.pathParam());
+                    logger.debug("请求PayPal发送参数：" + request.pathParam());
+                }
+            }
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                requestBuilder.addHeader(entry.getKey(), entry.getValue());
             }
             HttpResponse response = httpClient.execute(requestBuilder.build());
             String json = StreamUtils.copyToString(response.getEntity().getContent(), Charset.forName(CHARSET));

@@ -10,8 +10,7 @@ import java.util.Map;
 public abstract class PayPalRequest<T extends PayPalResponse> {
 
     protected Map<String, Object> buildParams() {
-        Map<String, Object> params = new HashMap<>();
-        return params;
+        return new HashMap<>();
     }
 
     protected Map<String, String> buildHeader() {
@@ -25,5 +24,13 @@ public abstract class PayPalRequest<T extends PayPalResponse> {
     protected abstract int getDataType();
 
     public abstract Class<T> responseClass();
+
+    protected String pathParam() {
+        return "";
+    }
+
+    protected String method() {
+        return "POST";
+    }
 
 }
