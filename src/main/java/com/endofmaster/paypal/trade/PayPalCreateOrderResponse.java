@@ -1,6 +1,5 @@
 package com.endofmaster.paypal.trade;
 
-import com.endofmaster.paypal.PayPalOrderState;
 import com.endofmaster.paypal.PayPalResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,7 +11,7 @@ import java.util.List;
 public class PayPalCreateOrderResponse extends PayPalResponse {
 
     private String id;
-    private PayPalOrderState state;
+    private String state;
     @JsonProperty("transactions")
     private List<PayPalTransaction> payPalTransactions;
     private List<Link> links;
@@ -43,7 +42,7 @@ public class PayPalCreateOrderResponse extends PayPalResponse {
         return id;
     }
 
-    public PayPalOrderState getState() {
+    public String getState() {
         return state;
     }
 
