@@ -17,7 +17,7 @@ public abstract class PayPalResponse {
     private String message;
 
     public boolean success() {
-        return StringUtils.isBlank(debugId);
+        return StringUtils.isBlank(debugId) && StringUtils.isBlank(errorDescription);
     }
 
     public String getErrorMsg() {

@@ -26,7 +26,7 @@ public class PayPalTransaction {
     PayPalTransaction() {
     }
 
-    public long getMoney() {
+    public long buildMoney() {
         BigDecimal money = new BigDecimal(amount.getTotal());
         BigDecimal value = new BigDecimal(100);
         return money.multiply(value).longValue();

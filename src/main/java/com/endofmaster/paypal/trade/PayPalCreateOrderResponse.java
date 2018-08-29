@@ -47,7 +47,7 @@ public class PayPalCreateOrderResponse extends PayPalResponse {
     }
 
     public long getAmount() {
-        return payPalTransactions.get(0).getMoney();
+        return payPalTransactions.get(0).buildMoney();
     }
 
     public List<PayPalTransaction> getPayPalTransactions() {
