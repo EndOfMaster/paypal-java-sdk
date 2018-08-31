@@ -2,6 +2,7 @@ package com.endofmaster.paypal;
 
 import com.endofmaster.commons.util.StreamUtils;
 import com.endofmaster.commons.util.crypto.CipherUtils;
+import com.endofmaster.commons.util.sign.RsaSignUtils;
 import com.endofmaster.commons.util.validate.ParamUtils;
 import com.endofmaster.paypal.base.GetAccessTokenRequest;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -168,11 +169,12 @@ public class PayPalClient {
     /** 用子证书验签 */
     private boolean verify(String webHookId, String transmissionSig, String transmissionId, String transmissionTime, String body, PublicKey clientChain) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         String expectedSignature = transmissionId + "|" + transmissionTime + "|" + webHookId + "|" + CipherUtils.crc32(body);
-        Signature signatureAlgorithm = Signature.getInstance("SHA256withRSA");
-        signatureAlgorithm.initVerify(clientChain);
-        signatureAlgorithm.update(expectedSignature.getBytes());
-        byte[] actualSignature = Base64.decodeBase64(transmissionSig.getBytes());
-        return signatureAlgorithm.verify(actualSignature);
+        return RsaSignUtils.sha256Verify(expectedSignature, transmissionSig, clientChain, CHARSET);
+//        Signature signatureAlgorithm = Signature.getInstance("SHA256withRSA");
+//        signatureAlgorithm.initVerify(clientChain);
+//        signatureAlgorithm.update(expectedSignature.getBytes());
+//        byte[] actualSignature = Base64.decodeBase64(transmissionSig.getBytes());
+//        return signatureAlgorithm.verify(actualSignature);
     }
 
     /**
