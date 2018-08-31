@@ -45,7 +45,7 @@ public class PayPalClientTest {
 
     @Test
     public void queryOrder() throws InterruptedException {
-        PayPalQueryOrderRequest request = new PayPalQueryOrderRequest("PAY-3KD33335LA815932VLOB4LQY");
+        PayPalQueryOrderRequest request = new PayPalQueryOrderRequest("PAY-6V03621221845261CLOELAAY");
         Thread.sleep(2000);
         PayPalCreateOrderResponse response = client.execute(request);
         if (response.success()) {
