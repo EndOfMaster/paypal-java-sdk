@@ -13,6 +13,7 @@ import static com.endofmaster.paypal.PayPalConstant.REQ_DATA_TYPE_JSON;
  */
 public class PayPalCreateOrderRequest extends PayPalRequest<PayPalCreateOrderResponse> {
 
+    /** Cent */
     private final long amount;
     private final String description;
     private final String returnUrl;
