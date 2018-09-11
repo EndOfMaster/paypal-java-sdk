@@ -11,11 +11,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -36,7 +38,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -80,6 +81,7 @@ public class PayPalClient {
         try {
             this.BASE_URL = isProd ? PROD_BASE_URL : TEST_BASE_URL;
             RequestConfig requestConfig = RequestConfig.custom()
+                    .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
                     .setSocketTimeout(60000)
                     .setConnectTimeout(30000)
                     .build();
@@ -87,6 +89,7 @@ public class PayPalClient {
                     .setMaxConnTotal(200)
                     .setMaxConnPerRoute(100)
                     .setDefaultRequestConfig(requestConfig)
+                    .setDefaultCookieStore(new BasicCookieStore())
                     .build();
             byte[] encoded = Base64.encodeBase64((clientId + ":" + secret).getBytes(CHARSET));
             this.authorization = new String(encoded, CHARSET);
