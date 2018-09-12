@@ -5,11 +5,17 @@ import com.endofmaster.commons.util.crypto.CipherUtils;
 import com.endofmaster.commons.util.sign.RsaSignUtils;
 import com.endofmaster.commons.util.validate.ParamUtils;
 import com.endofmaster.paypal.base.GetAccessTokenRequest;
+import com.endofmaster.paypal.base.GetAccessTokenResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -18,6 +24,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -32,6 +39,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -42,10 +51,10 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.endofmaster.paypal.PayPalConstant.CHARSET;
@@ -75,8 +84,6 @@ public class PayPalClient {
     private final CertificateFactory certFactory;
     private final X509Certificate trustCert;
 
-    static volatile String ACCESS_TOKEN;
-
     public PayPalClient(String clientId, String secret, boolean isProd) {
         try {
             this.BASE_URL = isProd ? PROD_BASE_URL : TEST_BASE_URL;
@@ -89,7 +96,6 @@ public class PayPalClient {
                     .setMaxConnTotal(200)
                     .setMaxConnPerRoute(100)
                     .setDefaultRequestConfig(requestConfig)
-                    .setDefaultCookieStore(new BasicCookieStore())
                     .build();
             byte[] encoded = Base64.encodeBase64((clientId + ":" + secret).getBytes(CHARSET));
             this.authorization = new String(encoded, CHARSET);
@@ -100,14 +106,15 @@ public class PayPalClient {
         }
     }
 
-    public <T extends PayPalResponse> T execute(PayPalRequest<T> request) {
+    public <T extends PayPalResponse> T execute(PayPalRequest<T> request, String accessToken) {
         try {
             Map<String, String> headers = request.buildHeader();
             if (request instanceof GetAccessTokenRequest) {
                 headers.put("Authorization", "Basic " + authorization);
             } else {
-                headers.put("Authorization", "Bearer " + ACCESS_TOKEN);
+                headers.put("Authorization", "Bearer " + accessToken);
             }
+            logger.debug("请求PayPal头参数：" + headers);
             RequestBuilder requestBuilder = RequestBuilder.post();
             Map<String, Object> params = request.buildParams();
             if (request.getDataType() == REQ_DATA_TYPE_FORM) {
@@ -142,7 +149,9 @@ public class PayPalClient {
         }
     }
 
-    /** 完整验签流程 */
+    /**
+     * 完整验签流程
+     */
     public boolean validateSign(HttpServletRequest request, String webHookId) {
         try {
             Enumeration<String> headerNames = request.getHeaderNames();
@@ -169,7 +178,9 @@ public class PayPalClient {
         }
     }
 
-    /** 用子证书验签 */
+    /**
+     * 用子证书验签
+     */
     private boolean verify(String webHookId, String transmissionSig, String transmissionId, String transmissionTime, String body, PublicKey clientChain) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         String expectedSignature = transmissionId + "|" + transmissionTime + "|" + webHookId + "|" + CipherUtils.crc32(body);
         return RsaSignUtils.sha256Verify(expectedSignature, transmissionSig, clientChain, CHARSET);
@@ -182,6 +193,7 @@ public class PayPalClient {
 
     /**
      * 验证子证书是否合法
+     *
      * @param clientChainStream 子证书
      */
     private X509Certificate validateReceivedEvent(InputStream clientChainStream) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {

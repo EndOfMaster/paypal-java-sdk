@@ -24,6 +24,7 @@ public class RefreshAccessToken {
     private final ScheduledExecutorService task;
 
     private final PayPalClient client;
+    String accessToken;
 
     public RefreshAccessToken(PayPalClient client) {
         this.client = client;
@@ -40,12 +41,12 @@ public class RefreshAccessToken {
         try {
             if (expired()) {
                 GetAccessTokenRequest request = new GetAccessTokenRequest();
-                GetAccessTokenResponse response = client.execute(request);
+                GetAccessTokenResponse response = client.execute(request, null);
                 if (response.success()) {
-                    PayPalClient.ACCESS_TOKEN = response.getAccessToken();
+                    this.accessToken = response.getAccessToken();
                     this.expiredAt = DateUtils.addSeconds(new Date(), response.getExpiresIn() - (60 * 10));
                 } else {
-                    throw new PayPalException("Failed to refresh PayPal token");
+                    throw new PayPalException("Failed to refresh PayPal token：" + response.getErrorMsg());
                 }
             }
         } catch (Exception e) {
@@ -55,9 +56,12 @@ public class RefreshAccessToken {
 
     private boolean expired() {
         logger.debug("Checking if PayPal token has expired");
-        boolean expired = StringUtils.isBlank(PayPalClient.ACCESS_TOKEN) || expiredAt.before(new Date());
+        boolean expired = StringUtils.isBlank(this.accessToken) || expiredAt.before(new Date());
         logger.debug("PayPal token has expired? " + (expired ? "YES" : "NO"));
         return expired;
     }
 
+    public String getAccessToken() {
+        return accessToken;
+    }
 }
