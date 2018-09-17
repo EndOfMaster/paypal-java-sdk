@@ -23,6 +23,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.security.x509.X500Name;
 
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
@@ -36,6 +37,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
@@ -190,7 +192,7 @@ public class PayPalClient {
      *
      * @param clientChainStream 子证书
      */
-    private X509Certificate validateReceivedEvent(InputStream clientChainStream) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+    X509Certificate validateReceivedEvent(InputStream clientChainStream) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, SignatureException {
         X509Certificate clientChain = (X509Certificate) certFactory.generateCertificates(clientChainStream).toArray()[0];
 
         KeyStore keyStore = KeyStore.getInstance("jks");
@@ -203,6 +205,16 @@ public class PayPalClient {
 
         trustManagers.checkClientTrusted(new X509Certificate[]{clientChain}, "RSA");
         clientChain.checkValidity();
+        String subjectDN = clientChain.getSubjectDN().getName();
+        Map<String, String> params = ParamUtils.parseKvStringByComma(subjectDN);
+        if (!params.containsKey("CN")) {
+            throw new SignatureException("paypal回调证书没有CN键");
+        } else {
+            String cn = params.get("CN");
+            if (!(cn.startsWith("messageverificationcerts") && cn.endsWith(".paypal.com"))) {
+                throw new SignatureException("证书CN参数错误");
+            }
+        }
         return clientChain;
     }
 
