@@ -5,17 +5,11 @@ import com.endofmaster.commons.util.crypto.CipherUtils;
 import com.endofmaster.commons.util.sign.RsaSignUtils;
 import com.endofmaster.commons.util.validate.ParamUtils;
 import com.endofmaster.paypal.base.GetAccessTokenRequest;
-import com.endofmaster.paypal.base.GetAccessTokenResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -23,8 +17,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
@@ -39,8 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -51,10 +41,10 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.endofmaster.paypal.PayPalConstant.CHARSET;
@@ -86,7 +76,9 @@ public class PayPalClient {
 
     public PayPalClient(String clientId, String secret, boolean isProd) {
         try {
+            logger.debug("是否生产参数：" + isProd);
             this.BASE_URL = isProd ? PROD_BASE_URL : TEST_BASE_URL;
+            logger.debug("基础请求地址：" + BASE_URL);
             RequestConfig requestConfig = RequestConfig.custom()
                     .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
                     .setSocketTimeout(60000)
@@ -116,6 +108,8 @@ public class PayPalClient {
             }
             logger.debug("请求PayPal头参数：" + headers);
             RequestBuilder requestBuilder = RequestBuilder.post();
+            String reqUrl = BASE_URL + request.getPath();
+            logger.debug("请求PayPal地址：" + reqUrl);
             Map<String, Object> params = request.buildParams();
             if (request.getDataType() == REQ_DATA_TYPE_FORM) {
                 requestBuilder.setUri(BASE_URL + request.getPath());
@@ -126,14 +120,14 @@ public class PayPalClient {
             }
             if (request.getDataType() == REQ_DATA_TYPE_JSON) {
                 if ("POST".equalsIgnoreCase(request.method())) {
-                    requestBuilder.setUri(BASE_URL + request.getPath());
+                    requestBuilder.setUri(reqUrl);
                     String reqJson = MAPPER.writeValueAsString(params);
                     logger.debug("请求PayPal发送参数：" + reqJson);
                     StringEntity entity = new StringEntity(reqJson, CHARSET);
                     entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
                     requestBuilder.setEntity(entity);
                 } else {
-                    requestBuilder = RequestBuilder.get(BASE_URL + request.getPath());
+                    requestBuilder = RequestBuilder.get(reqUrl);
                     logger.debug("请求PayPal发送参数：" + request.getPath());
                 }
             }
