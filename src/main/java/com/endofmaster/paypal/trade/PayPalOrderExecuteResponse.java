@@ -6,4 +6,5 @@ import com.endofmaster.paypal.PayPalResponse;
  * @author ZM.Wang
  */
 public class PayPalOrderExecuteResponse extends PayPalResponse {
+
 }

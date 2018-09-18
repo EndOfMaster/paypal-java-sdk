@@ -15,12 +15,14 @@ public class PayPalCreateOrderRequest extends PayPalRequest<PayPalCreateOrderRes
 
     /** Cent */
     private final long amount;
+    private final String chargeId;
     private final String description;
     private final String returnUrl;
     private final String cancelUrl;
 
-    public PayPalCreateOrderRequest(long amount, String description, String returnUrl, String cancelUrl) {
+    public PayPalCreateOrderRequest(long amount, String chargeId, String description, String returnUrl, String cancelUrl) {
         this.amount = amount;
+        this.chargeId = chargeId;
         this.description = description;
         this.returnUrl = returnUrl;
         this.cancelUrl = cancelUrl;
@@ -31,7 +33,8 @@ public class PayPalCreateOrderRequest extends PayPalRequest<PayPalCreateOrderRes
         Map<String, Object> params = super.buildParams();
         params.put("intent", "sale");
         params.put("payer", Collections.singletonMap("payment_method", "paypal"));
-        PayPalTransaction transactions = new PayPalTransaction(description, amount);
+        PayPalTransaction transactions = new PayPalTransaction(chargeId, description, amount);
+        transactions.buildItemList(new PayPalItems(description, amount));
         params.put("transactions", Collections.singleton(transactions));
         Map<String, String> urls = new HashMap<>(2);
         urls.put("return_url", returnUrl);
