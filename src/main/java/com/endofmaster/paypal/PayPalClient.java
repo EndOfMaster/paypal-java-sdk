@@ -5,8 +5,10 @@ import com.endofmaster.commons.util.crypto.CipherUtils;
 import com.endofmaster.commons.util.sign.RsaSignUtils;
 import com.endofmaster.commons.util.validate.ParamUtils;
 import com.endofmaster.paypal.base.GetAccessTokenRequest;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -55,6 +57,8 @@ import static com.endofmaster.paypal.PayPalConstant.HEADER_TRANSMISSION_TIME;
 import static com.endofmaster.paypal.PayPalConstant.REQ_DATA_TYPE_FORM;
 import static com.endofmaster.paypal.PayPalConstant.REQ_DATA_TYPE_JSON;
 import static com.endofmaster.paypal.PayPalConstant.TRUST_CERT;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
@@ -64,7 +68,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class PayPalClient {
 
     private final static Logger logger = LoggerFactory.getLogger(PayPalClient.class);
-    private final static ObjectMapper MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private final static ObjectMapper MAPPER = new ObjectMapper();
     private final static String PROD_BASE_URL = "https://api.paypal.com";
     private final static String TEST_BASE_URL = "https://api.sandbox.paypal.com";
 
@@ -75,6 +79,9 @@ public class PayPalClient {
     private final X509Certificate trustCert;
 
     public PayPalClient(String clientId, String secret, boolean isProd) {
+        MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        MAPPER.setVisibility(new VisibilityChecker.Std(NONE, NONE, NONE, NONE, ANY));
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
             logger.debug("是否生产参数：" + isProd);
             this.BASE_URL = isProd ? PROD_BASE_URL : TEST_BASE_URL;
