@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 
@@ -20,6 +21,9 @@ public class PayPalTransaction {
 
     private String description;
     private PayPalAmount amount;
+
+    @JsonProperty("related_resources")
+    private List<PayPalRelatedResources> relatedResources;
 
     @JsonProperty("item_list")
     private Map<String, Object> itemList;
@@ -49,6 +53,16 @@ public class PayPalTransaction {
         return money.multiply(value).longValue();
     }
 
+    public String getSaleId() {
+        if (relatedResources.size() > 0) {
+            PayPalRelatedResources relatedResources = this.relatedResources.get(0);
+            if (relatedResources.getSale() != null) {
+                return relatedResources.getSale().getId();
+            }
+        }
+        return null;
+    }
+
     public String getReferenceId() {
         return referenceId;
     }
@@ -65,4 +79,7 @@ public class PayPalTransaction {
         return chargeId;
     }
 
+    public List<PayPalRelatedResources> getRelatedResources() {
+        return relatedResources;
+    }
 }
