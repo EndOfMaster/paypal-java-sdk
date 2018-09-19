@@ -14,7 +14,7 @@ public class PayPalOrderExecuteResponse extends PayPalResponse {
     private List<PayPalTransaction> transactions;
 
     public String getSaleId() {
-        if (transactions.size() > 0) {
+        if (transactions != null && transactions.size() > 0) {
             return transactions.get(0).getSaleId();
         }
         return null;

@@ -54,7 +54,7 @@ public class PayPalTransaction {
     }
 
     public String getSaleId() {
-        if (relatedResources.size() > 0) {
+        if (relatedResources != null && relatedResources.size() > 0) {
             PayPalRelatedResources relatedResources = this.relatedResources.get(0);
             if (relatedResources.getSale() != null) {
                 return relatedResources.getSale().getId();
