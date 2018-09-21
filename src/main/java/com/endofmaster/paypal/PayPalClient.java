@@ -162,10 +162,22 @@ public class PayPalClient {
                 headers.put(nextElement, request.getHeader(nextElement));
             }
             String body = StreamUtils.copyToString(request.getInputStream(), Charset.forName(CHARSET));
-            String clientChainUrl = ParamUtils.findParam(headers, HEADER_CERT_URL);
-            String transmissionId = ParamUtils.findParam(headers, HEADER_TRANSMISSION_ID);
-            String transmissionTime = ParamUtils.findParam(headers, HEADER_TRANSMISSION_TIME);
-            String transmissionSig = ParamUtils.findParam(headers, HEADER_TRANSMISSION_SIG);
+            String clientChainUrl = ParamUtils.findParamNoEx(headers, HEADER_CERT_URL);
+            if (clientChainUrl == null) {
+                clientChainUrl = ParamUtils.findParam(headers, HEADER_CERT_URL.toLowerCase());
+            }
+            String transmissionId = ParamUtils.findParamNoEx(headers, HEADER_TRANSMISSION_ID);
+            if (transmissionId == null) {
+                transmissionId = ParamUtils.findParam(headers, HEADER_TRANSMISSION_ID.toLowerCase());
+            }
+            String transmissionTime = ParamUtils.findParamNoEx(headers, HEADER_TRANSMISSION_TIME);
+            if (transmissionTime == null) {
+                transmissionTime = ParamUtils.findParam(headers, HEADER_TRANSMISSION_TIME.toLowerCase());
+            }
+            String transmissionSig = ParamUtils.findParamNoEx(headers, HEADER_TRANSMISSION_SIG);
+            if (transmissionSig == null) {
+                transmissionSig = ParamUtils.findParam(headers, HEADER_TRANSMISSION_SIG.toLowerCase());
+            }
             HttpResponse response = httpClient.execute(new HttpGet(clientChainUrl));
             InputStream clientChainStream = response.getEntity().getContent();
             if (clientChainStream != null) {
@@ -185,11 +197,6 @@ public class PayPalClient {
     private boolean verify(String webHookId, String transmissionSig, String transmissionId, String transmissionTime, String body, PublicKey clientChain) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         String expectedSignature = transmissionId + "|" + transmissionTime + "|" + webHookId + "|" + CipherUtils.crc32(body);
         return RsaSignUtils.sha256Verify(expectedSignature, transmissionSig, clientChain, CHARSET);
-//        Signature signatureAlgorithm = Signature.getInstance("SHA256withRSA");
-//        signatureAlgorithm.initVerify(clientChain);
-//        signatureAlgorithm.update(expectedSignature.getBytes());
-//        byte[] actualSignature = Base64.decodeBase64(transmissionSig.getBytes());
-//        return signatureAlgorithm.verify(actualSignature);
     }
 
     /**

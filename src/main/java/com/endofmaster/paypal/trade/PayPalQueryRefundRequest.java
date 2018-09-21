@@ -26,6 +26,11 @@ public class PayPalQueryRefundRequest extends PayPalRequest<PayPalQueryRefundRes
     }
 
     @Override
+    protected String method() {
+        return "GET";
+    }
+
+    @Override
     public Class<PayPalQueryRefundResponse> responseClass() {
         return PayPalQueryRefundResponse.class;
     }
