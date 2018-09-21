@@ -9,7 +9,7 @@ public class PayPalAmount {
     private String currency;
 
     PayPalAmount(long total) {
-        this.total = total / 100.0 + "";
+        this.total = String.format("%.2f", total / 100.0);
         this.currency = "USD";
     }
 
